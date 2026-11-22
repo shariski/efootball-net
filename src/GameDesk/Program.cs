@@ -47,7 +47,7 @@ internal static class Program
         using var instance = new Mutex(true, "Local\\GameDesk.Windows", out bool acquired);
         if (!acquired)
         {
-            nint window = FindWindow(null, "GameDesk");
+            nint window = FindWindow(null, ControlWindow.AppName);
             if (window != 0)
             {
                 _ = GetWindowThreadProcessId(window, out uint pid);

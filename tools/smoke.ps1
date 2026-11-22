@@ -17,11 +17,11 @@ function Invoke-Check([string]$Name, [string]$Arguments) {
     $result = Start-Process -FilePath $application -ArgumentList ($Arguments.Replace('{report}', $quotedReport)) -Wait -PassThru
     if ($result.ExitCode -ne 0 -or !(Test-Path -LiteralPath $report)) {
         if (Test-Path -LiteralPath $report) { Get-Content -LiteralPath $report }
-        throw "GameDesk smoke test failed. Test=$Name Exit=$($result.ExitCode)"
+        throw "eFootball Net smoke test failed. Test=$Name Exit=$($result.ExitCode)"
     }
     if (!(Get-Content -LiteralPath $report -Raw | ConvertFrom-Json).passed) {
         Get-Content -LiteralPath $report
-        throw "GameDesk reported a failed smoke test. Test=$Name"
+        throw "eFootball Net reported a failed smoke test. Test=$Name"
     }
     Get-Content -LiteralPath $report
 }

@@ -18,7 +18,6 @@ internal sealed class TrayApp : ApplicationContext
     private readonly bool demo;
     private readonly Task<ProviderCatalog> providers = Task.Run(ProviderCatalog.Load);
     private ControlWindow controls;
-    private ReviewWindow? review;
     private NamedPipeServerStream? pipe;
     private SessionLog? log;
     private NetworkSample? sample;
@@ -43,17 +42,17 @@ internal sealed class TrayApp : ApplicationContext
         detailsItem = new ToolStripMenuItem("Detailed overlay", null, (_, _) => ToggleDetails())
             { Checked = overlay.Detailed };
         markerItem = new ToolStripMenuItem("Mark felt lag", null, (_, _) => Mark()) { Enabled = demo };
-        menu.Items.Add(new ToolStripMenuItem("Open GameDesk", null, (_, _) => OpenControls()));
+        menu.Items.Add(new ToolStripMenuItem("Open eFootball Net", null, (_, _) => OpenControls()));
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(monitorItem);
         menu.Items.Add(overlayItem);
         menu.Items.Add(detailsItem);
         menu.Items.Add(markerItem);
-        menu.Items.Add(new ToolStripMenuItem("Session review", null, (_, _) => OpenReview()));
+        menu.Items.Add(new ToolStripMenuItem("History", null, (_, _) => OpenReview()));
         menu.Items.Add(new ToolStripMenuItem("Open session logs", null, (_, _) => OpenLogs()));
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(new ToolStripMenuItem("Exit", null, (_, _) => ExitThread()));
-        tray = new NotifyIcon { Icon = SystemIcons.Information, ContextMenuStrip = menu, Text = "GameDesk", Visible = true };
+        tray = new NotifyIcon { Icon = SystemIcons.Information, ContextMenuStrip = menu, Text = ControlWindow.AppName, Visible = true };
 
         _ = overlay.Handle;
         overlay.ToggleRequested += ToggleOverlay;
@@ -104,22 +103,13 @@ internal sealed class TrayApp : ApplicationContext
     }
 
     private ControlWindow CreateControls() =>
-        new(ToggleMonitor, ToggleOverlay, ToggleDetails, Mark, OpenReview,
+        new(ToggleMonitor, ToggleOverlay, ToggleDetails, Mark,
             overlay.ToggleRegistered, overlay.DetailShortcut, overlay.MarkerRegistered);
 
     private void OpenReview()
     {
-        if (review is null || review.IsDisposed)
-        {
-            review = new ReviewWindow(SessionLog.Folder);
-            review.Show();
-        }
-        else
-        {
-            if (review.WindowState == FormWindowState.Minimized)
-                review.WindowState = FormWindowState.Normal;
-            review.Activate();
-        }
+        OpenControls();
+        controls.ShowHistory();
     }
 
     private void RefreshControls()
@@ -141,7 +131,8 @@ internal sealed class TrayApp : ApplicationContext
                 _ => "Connected to the network collector."
             });
         controls.UpdateStatus(message, monitorItem.Text ?? "Start network monitor",
-            monitorItem.Enabled, overlayItem.Checked, overlay.Detailed, markerItem.Enabled);
+            monitorItem.Enabled, overlayItem.Checked, overlay.Detailed, markerItem.Enabled, sample,
+            ProviderFor(sample?.Endpoint));
     }
 
     private void ToggleMonitor()
@@ -414,7 +405,6 @@ internal sealed class TrayApp : ApplicationContext
         tray.Dispose();
         timer.Dispose();
         overlay.Dispose();
-        review?.Close();
         controls.Dispose();
         base.ExitThreadCore();
     }

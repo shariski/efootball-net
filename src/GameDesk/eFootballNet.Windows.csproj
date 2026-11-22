@@ -7,11 +7,11 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <PlatformTarget>x64</PlatformTarget>
-    <AssemblyName>GameDesk</AssemblyName>
-    <Version>0.1.0</Version>
-    <Product>GameDesk for Windows</Product>
+    <AssemblyName>eFootballNet</AssemblyName>
+    <Version>0.2.0</Version>
+    <Product>eFootball Net</Product>
     <Description>Live network monitoring and match review for eFootball.</Description>
-    <RepositoryUrl>https://github.com/shariski/gamedesk-windows</RepositoryUrl>
+    <RepositoryUrl>https://github.com/shariski/efootball-net</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>

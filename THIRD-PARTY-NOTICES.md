@@ -1,6 +1,6 @@
 # Third-party notices
 
-GameDesk source code is licensed under [MIT](LICENSE). Windows components and dependencies retain their upstream licenses.
+eFootball Net source code is licensed under [MIT](LICENSE). Windows components and dependencies retain their upstream licenses.
 
 - Microsoft.Diagnostics.Tracing.TraceEvent is developed by the [.NET Foundation and PerfView contributors](https://github.com/microsoft/perfview/blob/main/LICENSE.TXT) under the MIT license.
 - Microsoft.Diagnostics.NETCore.Client is distributed from [dotnet/diagnostics](https://github.com/dotnet/diagnostics/blob/main/LICENSE.TXT) under the MIT license.

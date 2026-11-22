@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0
+
+- Rename the app to eFootball Net.
+- Put live readings and the UDP chart under Monitor.
+- Put session review and comparisons under History in the same window.
+
 ## 0.1.0
 
 - Monitor eFootball UDP flows with Windows ETW and show candidate provider regions from public IP ranges.

@@ -233,7 +233,9 @@ internal static class SelfTest
             var file = files.FirstOrDefault() ??
                 throw new InvalidOperationException("No session fixture was supplied.");
             var session = SessionReview.Load(file.Path, CancellationToken.None);
-            using var window = new ReviewWindow(folder) { ShowInTaskbar = false, Opacity = 0 };
+            using var window = new ControlWindow(() => { }, () => { }, () => { }, () => { },
+                true, "Ctrl+Alt+F7", true, folder) { ShowInTaskbar = false, Opacity = 0 };
+            window.ShowHistory();
             window.Show();
             var stopwatch = Stopwatch.StartNew();
             Label[] labels = Descendants(window).OfType<Label>().ToArray();
@@ -248,7 +250,8 @@ internal static class SelfTest
                 incidents.SelectedIndex = 0;
             Application.DoEvents();
             var plot = Descendants(window).OfType<ReviewChart>().Single();
-            bool layoutFits = Descendants(window).All(control => control.Parent!.ClientRectangle.Contains(control.Bounds));
+            bool layoutFits = Descendants(window).Where(control => control.Visible)
+                .All(control => control.Parent!.ClientRectangle.Contains(control.Bounds));
             bool detail = incidents.Items.Count == 0 || labels.Any(label => label.Text.Contains("±5 s"));
             bool comparisonTested = files.Length > 1;
             bool comparisonLoaded = false;
@@ -257,7 +260,7 @@ internal static class SelfTest
             if (comparisonTested)
             {
                 var selector = Descendants(window).OfType<ComboBox>().Single(combo => combo.AccessibleName == "Compare session");
-                var zoom = Descendants(window).OfType<CheckBox>().Single();
+                var zoom = Descendants(window).OfType<CheckBox>().Single(box => box.Text.StartsWith("Around selection", StringComparison.Ordinal));
                 selector.SelectedIndex = 1;
                 stopwatch.Restart();
                 while (!labels.Any(label => label.Visible && label.Text.StartsWith("UDP gap p95 ", StringComparison.Ordinal)) &&
@@ -272,7 +275,8 @@ internal static class SelfTest
                 sharedSeconds = Math.Min(other.Duration, session.Duration);
                 comparisonLoaded = labels.Any(label => label.Visible && label.Text.Contains($"0:00–{SessionReview.Time(sharedSeconds.Value)}")) &&
                     labels.Any(label => label.Visible && label.Text.Contains("Match RTT p95"));
-                layoutFits &= Descendants(window).All(control => control.Parent!.ClientRectangle.Contains(control.Bounds));
+                layoutFits &= Descendants(window).Where(control => control.Visible)
+                    .All(control => control.Parent!.ClientRectangle.Contains(control.Bounds));
                 if (incidents.Items.Count > 0)
                 {
                     incidents.SelectedIndex = 0;
@@ -353,15 +357,20 @@ internal static class SelfTest
     {
         try
         {
-            using var panel = new ControlWindow(() => { }, () => { }, () => { }, () => { }, () => { }, true, "Ctrl+Alt+F11", true)
+            using var panel = new ControlWindow(() => { }, () => { }, () => { }, () => { }, true, "Ctrl+Alt+F7", true)
                 { ShowInTaskbar = false, Opacity = 0 };
             panel.UpdateStatus("Windows missed network trace events. Waiting for fresh data.",
                 "Stop network monitor", true, true, true, false);
             panel.Show();
             Application.DoEvents();
             var issues = FindClipping(panel).ToList();
-            panel.UpdateStatus("eFootball detected. Waiting for match traffic.",
-                "Stop network monitor", true, true, false, false);
+            long now = Stopwatch.GetTimestamp();
+            var points = Enumerable.Range(0, 60).Select(i => new GapPoint(now - (59 - i) * Stopwatch.Frequency / 4,
+                i == 36 ? 93 : 18 + 3 * Math.Sin(i * 0.42))).ToArray();
+            var sample = new NetworkSample(now, "stable", BaselineMs: 20, Points: points,
+                Probes: new(new(now, 43, "Success"), new(now, 2, "Success")));
+            panel.UpdateStatus("Match connection detected. UDP arrivals are steady.",
+                "Stop network monitor", true, true, false, true, sample, "Google Cloud · Hong Kong");
             Application.DoEvents();
             issues.AddRange(FindClipping(panel));
             using var bitmap = new Bitmap(panel.Width, panel.Height);
@@ -382,6 +391,8 @@ internal static class SelfTest
         {
             foreach (Control child in parent.Controls)
             {
+                if (!child.Visible)
+                    continue;
                 bool clipped = !parent.ClientRectangle.Contains(child.Bounds);
                 if (child is Label or Button or CheckBox)
                 {

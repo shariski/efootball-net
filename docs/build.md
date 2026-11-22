@@ -3,7 +3,7 @@
 Use Windows x64 with the .NET 10 SDK. Clone this repo and run the commands from its root.
 
 ```powershell
-dotnet restore .\src\GameDesk\GameDesk.Windows.csproj -r win-x64 --locked-mode
+dotnet restore .\src\GameDesk\eFootballNet.Windows.csproj -r win-x64 --locked-mode
 .\tools\build.ps1
 ```
 
@@ -12,8 +12,8 @@ dotnet restore .\src\GameDesk\GameDesk.Windows.csproj -r win-x64 --locked-mode
 For a normal development build and the data smoke test:
 
 ```powershell
-dotnet build .\src\GameDesk\GameDesk.Windows.csproj -c Release -r win-x64 --no-restore
-$app = '.\src\GameDesk\bin\Release\net10.0-windows\win-x64\GameDesk.exe'
+dotnet build .\src\GameDesk\eFootballNet.Windows.csproj -c Release -r win-x64 --no-restore
+$app = '.\src\GameDesk\bin\Release\net10.0-windows\win-x64\eFootballNet.exe'
 .\tools\smoke.ps1 -App $app
 ```
 

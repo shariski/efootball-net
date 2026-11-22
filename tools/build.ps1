@@ -5,7 +5,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot
-$project = Join-Path $root 'src\GameDesk\GameDesk.Windows.csproj'
+$project = Join-Path $root 'src\GameDesk\eFootballNet.Windows.csproj'
 $version = ([xml](Get-Content -LiteralPath $project -Raw)).Project.PropertyGroup.Version
 $output = [IO.Path]::GetFullPath($OutputDirectory)
 New-Item -ItemType Directory -Path $output -Force | Out-Null
@@ -13,14 +13,14 @@ $temp = Join-Path ([IO.Path]::GetTempPath()) ('gamedesk-package-' + [Guid]::NewG
 New-Item -ItemType Directory -Path $temp | Out-Null
 
 $packages = @(
-    @{ Name = "GameDesk-$version-win-x64.zip"; Mode = 'standalone'; SelfContained = 'true' },
-    @{ Name = "GameDesk-$version-win-x64-slim.zip"; Mode = 'slim'; SelfContained = 'false' }
+    @{ Name = "eFootballNet-$version-win-x64.zip"; Mode = 'standalone'; SelfContained = 'true' },
+    @{ Name = "eFootballNet-$version-win-x64-slim.zip"; Mode = 'slim'; SelfContained = 'false' }
 )
 
 function Copy-RuntimeNotices([string]$PublishPath) {
     $assetsPath = Join-Path (Split-Path $project) 'obj\project.assets.json'
     $assets = Get-Content -LiteralPath $assetsPath -Raw | ConvertFrom-Json
-    $deps = Get-Content -LiteralPath (Join-Path $PublishPath 'GameDesk.deps.json') -Raw | ConvertFrom-Json
+    $deps = Get-Content -LiteralPath (Join-Path $PublishPath 'eFootballNet.deps.json') -Raw | ConvertFrom-Json
     $runtimePacks = @($deps.libraries.PSObject.Properties.Name | Where-Object { $_ -like 'runtimepack.*' })
     if ($runtimePacks.Count -eq 0) { throw 'The standalone package did not declare its runtime packs.' }
     foreach ($pack in $runtimePacks) {

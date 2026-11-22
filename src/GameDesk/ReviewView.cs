@@ -1,6 +1,6 @@
 namespace GameDesk;
 
-internal sealed class ReviewWindow : Form
+internal sealed class ReviewView : UserControl
 {
     private readonly string folder;
     private readonly ComboBox sessions = new() { DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Fill, AccessibleName = "Recorded session" };
@@ -17,16 +17,11 @@ internal sealed class ReviewWindow : Form
     private double? selectedTime;
     private bool updatingFiles;
 
-    public ReviewWindow(string folder)
+    public ReviewView(string folder)
     {
         this.folder = folder;
-        Text = "GameDesk Session Review";
-        Icon = SystemIcons.Information;
-        StartPosition = FormStartPosition.CenterParent;
-        AutoScaleMode = AutoScaleMode.Dpi;
-        AutoScaleDimensions = new SizeF(96, 96);
-        ClientSize = new Size(890, 570);
-        MinimumSize = new Size(520, 420);
+        Dock = DockStyle.Fill;
+        BackColor = Color.White;
         var refresh = new Button { Text = "Refresh", AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink };
         refresh.Click += async (_, _) => await Reload();
         sessions.SelectedIndexChanged += async (_, _) =>
@@ -57,7 +52,7 @@ internal sealed class ReviewWindow : Form
             selectedTime = time;
             UpdateReading();
         };
-        Shown += async (_, _) => await Reload();
+        Load += async (_, _) => await Reload();
         Resize += (_, _) => FitLabels();
         summary.TextChanged += (_, _) => FitLabel(summary);
         comparisonStats.TextChanged += (_, _) => FitLabel(comparisonStats);
@@ -100,18 +95,6 @@ internal sealed class ReviewWindow : Form
             row.Controls.Add(right, 2, 0);
         return row;
     }
-
-    protected override void OnHandleCreated(EventArgs e)
-    {
-        base.OnHandleCreated(e);
-        var workArea = Screen.FromHandle(Handle).WorkingArea;
-        float scale = DeviceDpi / 96f;
-        Size = new Size(Math.Min(workArea.Width, (int)(900 * scale)),
-            Math.Min(workArea.Height, (int)(615 * scale)));
-        FitLabels();
-    }
-
-    protected override bool ShowWithoutActivation => !ShowInTaskbar;
 
     private void FitLabels()
     {
@@ -299,9 +282,10 @@ internal sealed class ReviewWindow : Form
     private static double? Percentile(ReviewRange range, ReviewPoint[] points, double fraction) =>
         SessionReview.Percentile(range.Points(points).Select(point => point.Ms), fraction);
 
-    protected override void OnFormClosed(FormClosedEventArgs e)
+    protected override void Dispose(bool disposing)
     {
-        loading?.Cancel();
-        base.OnFormClosed(e);
+        if (disposing)
+            loading?.Cancel();
+        base.Dispose(disposing);
     }
 }
